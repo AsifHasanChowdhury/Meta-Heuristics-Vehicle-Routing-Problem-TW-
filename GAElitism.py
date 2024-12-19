@@ -5,6 +5,8 @@ import Mutation as mu
 import RouteEncoding as re
 import RoutePrint as rp
 import FileSystem as fs
+import elitistGen as eg
+import math
 import os
 
 #popSize <-- desired population size
@@ -63,16 +65,21 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
                 
 
             index+=1   
+        
 
         # Q <-- {}
-        newPopulation = []
+        sortedPopulation = eg.elitistSelection(population,fitnessList)
+        
+        selection_count = math.ceil(0.2 * pop_size)
+
+        newPopulation = sortedPopulation[:selection_count]
 
         # for popSize/2 times do
         pivot1 = 0
         pivot2 = pop_size-1
         
 
-        productionCount = int(pop_size/2)
+        productionCount = int((pop_size-selection_count)/2)
         # print("prodCount ", productionCount)
         while productionCount > 0:
             
@@ -144,8 +151,16 @@ def main():
     pop_size = 100
     cx_pb = 0.85
     mut_pb = 0.02
-    n_gen = 10000
+    n_gen = 100
     instance_name = 'C107'
+    # Q Vehicle fuel tank capacity /79.69/
+    # C Vehicle load capacity /200.0/
+    # r fuel consumption rate /1.0/
+    # g inverse refueling rate /3.39/
+    # v average Velocity /1.0/
+
+    batteryCapacity = 40
+
 
     geneticAlgorithmElitism(pop_size, 1, ind_size, n_gen, instance_name, 
                             unit_cost, init_cost, wait_cost, delay_cost)
