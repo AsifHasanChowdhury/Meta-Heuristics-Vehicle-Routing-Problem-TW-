@@ -75,6 +75,37 @@ def order_cross_over(ind1, ind2):
     return child1, child2
 
 
+
+def order_crossover(parent1, parent2):
+   
+    size = len(parent1)
+
+    # Randomly select two crossover points
+    point1, point2 = sorted(random.sample(range(size), 2))
+
+    # Create offspring with None values
+    offspring1 = [None] * size
+    offspring2 = [None] * size
+
+    # Copy the segment between the crossover points from each parent
+    offspring1[point1:point2] = parent1[point1:point2]
+    offspring2[point1:point2] = parent2[point1:point2]
+
+    # Fill the remaining positions with the genes from the other parent
+    def fill_offspring(offspring, parent, start, end):
+        current_position = end
+        for gene in parent:
+            if gene not in offspring:
+                if current_position >= size:
+                    current_position = 0
+                offspring[current_position] = gene
+                current_position += 1
+
+    fill_offspring(offspring1, parent2, point1, point2)
+    fill_offspring(offspring2, parent1, point1, point2)
+
+    return offspring1, offspring2
+
 # parent1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 # parent2 = [3, 9, 4, 7, 6, 5, 2, 1, 8]
 
@@ -182,4 +213,7 @@ def cx_partially(ind1, ind2):
     #return child1,child1
 # print(cx_partially([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
 
-#print(cx_partially_mapped([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
+print(order_crossover([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
+
+
+#print(order_cross_over([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
