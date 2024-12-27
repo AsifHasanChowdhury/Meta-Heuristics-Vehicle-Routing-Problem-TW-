@@ -97,8 +97,8 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             ActionP2,reward2 = dqn.ReinforcementDriverMethod(parent2,2,rewardList)
             
 
-            print(f'ACTIONP1 {ActionP1} reward1 {reward1}')
-            print(f'ACTIONP2 {ActionP2} reward2 {reward2}')
+            # print(f'ACTIONP1 {ActionP1} reward1 {reward1}')
+            # print(f'ACTIONP2 {ActionP2} reward2 {reward2}')
             
             pivot1+=1
             pivot2-=1
@@ -123,8 +123,24 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             mutatedc1 = mu.inverse_mutation(children1)
             mutatedc2 = mu.inverse_mutation(children2)
 
-            newPopulation.append(mutatedc1)
-            newPopulation.append(mutatedc2)
+
+            withMutationRewardList=[]
+            withMutationRewardList.append(ff.evaluate_individual(mutatedc1, instance, unit_cost,init_cost, wait_cost, delay_cost))
+            withMutationRewardList.append(ff.evaluate_individual(mutatedc2, instance, unit_cost,init_cost, wait_cost, delay_cost))
+
+            ActionM1,Mreward1 = dqn.ReinforcementDriverMethod(mutatedc1,2,withMutationRewardList)
+            ActionM2,Mreward2 = dqn.ReinforcementDriverMethod(mutatedc1,2,withMutationRewardList)
+            
+            if(Mreward1>reward1):
+                newPopulation.append(mutatedc1)
+            else:
+                newPopulation.append(children1)
+
+            if(Mreward2>reward2):
+                newPopulation.append(mutatedc2)
+            else:
+                newPopulation.append(children2)
+
 
             productionCount-=1
         # np = newPopulation.sort() 
@@ -180,7 +196,7 @@ def main():
     pop_size = 100
     cx_pb = 0.85
     mut_pb = 0.02
-    n_gen = 100
+    n_gen = 10
     instance_name = 'C107'
     # Q Vehicle fuel tank capacity /79.69/
     # C Vehicle load capacity /200.0/
