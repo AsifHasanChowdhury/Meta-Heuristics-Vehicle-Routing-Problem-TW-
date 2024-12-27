@@ -103,11 +103,11 @@ def ReinforcementDriverMethod(singlePopulation,action_space,fitnessScoreList):
     env = CustomEnvironment(action_space,singlePopulation)
     agent = DQNAgent(state_size=len(env.state), action_size=env.action_space)
 
-    episodes = 1000
+    episodes = 5
     batch_size = 32
 
     for e in range(episodes):
-        state = env.reset()
+        state = env.reset(singlePopulation)
         total_reward = 0
 
         while True:
@@ -129,3 +129,8 @@ def ReinforcementDriverMethod(singlePopulation,action_space,fitnessScoreList):
     test_state = singlePopulation
     action = agent.act(test_state)
     print(f"For test state {test_state}, the chosen action is {action}")
+
+    return action,total_reward
+
+
+#ReinforcementDriverMethod([1, 4, 5, 6, 8, 2],2,[0.555,0.99999])

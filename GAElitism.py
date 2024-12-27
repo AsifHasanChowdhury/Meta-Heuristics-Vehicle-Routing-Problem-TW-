@@ -86,18 +86,40 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             
             parent1 = population[pivot1]
             parent2 = population[pivot2]
+            
 
+            rewardList=[]
+            rewardList.append(fitnessList[pivot1])
+            rewardList.append(fitnessList[pivot1])
+            
+
+            ActionP1,reward1 = dqn.ReinforcementDriverMethod(parent1,2,rewardList)
+            ActionP2,reward2 = dqn.ReinforcementDriverMethod(parent2,2,rewardList)
+            
+
+            print(f'ACTIONP1 {ActionP1} reward1 {reward1}')
+            print(f'ACTIONP2 {ActionP2} reward2 {reward2}')
+            
             pivot1+=1
             pivot2-=1
 
-            ActionP1 = dqn.ReinforcementDriverMethod(parent1,[1],[fitnessList[pivot1]])
-            ActionP2 = dqn.ReinforcementDriverMethod(parent2,[1],[fitnessList[pivot2]])
             
-            children1
-            children2
-            if(ActionP1 == ActionP2 and ActionP1 == 1):
+            children1 = None
+            children2 = None
+
+            if(ActionP1 == ActionP2 and ActionP1 == 0):
                 children1, children2 = co.cx_partially(parent1,parent2)
             
+            elif (ActionP1 == ActionP2 and ActionP1 == 1):
+                children1, children2 = co.order_crossover(parent1,parent2)
+
+            elif (ActionP1 != ActionP2 and reward1>reward2):
+                children1, children2 = co.cx_partially(parent1,parent2)
+
+            else:
+                children1, children2 = co.order_crossover(parent1,parent2)
+
+
             mutatedc1 = mu.inverse_mutation(children1)
             mutatedc2 = mu.inverse_mutation(children2)
 
