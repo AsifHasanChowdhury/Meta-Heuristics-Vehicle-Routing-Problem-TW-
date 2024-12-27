@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 from collections import deque
+import CrossOver as co
 
 # Define the Neural Network for DQN
 class DQN(nn.Module):
@@ -78,17 +79,17 @@ class DQNAgent:
 
 # Custom Environment
 class CustomEnvironment:
-    def __init__(self):
-        self.action_space = 4
-        self.state = [1, 4, 5, 6, 8, 2]
+    def __init__(self,ActionSize,population):
+        self.action_space = ActionSize
+        self.state = population
 
-    def reset(self):
-        self.state = [1, 4, 5, 6, 8, 2]
+    def reset(self,population):
+        self.state = population
         return self.state
 
-    def step(self, action):
+    def step(self, action,fitnessScoreList):
         # Example reward structure with variability
-        base_rewards = [100, 200, 400, 1000]
+        base_rewards = fitnessScoreList
         variability = np.random.randint(-100, 100)
         reward = base_rewards[action] + variability
 
@@ -98,8 +99,8 @@ class CustomEnvironment:
         return next_state, reward, done
 
 # Training Loop
-if __name__ == "__main__":
-    env = CustomEnvironment()
+def ReinforcementDriverMethod(singlePopulation,action_space,fitnessScoreList):
+    env = CustomEnvironment(action_space,singlePopulation)
     agent = DQNAgent(state_size=len(env.state), action_size=env.action_space)
 
     episodes = 1000
@@ -111,7 +112,7 @@ if __name__ == "__main__":
 
         while True:
             action = agent.act(state)
-            next_state, reward, done = env.step(action)
+            next_state, reward, done = env.step(action,fitnessScoreList)
             total_reward += reward
 
             agent.remember(state, action, reward, next_state, done)
@@ -125,6 +126,6 @@ if __name__ == "__main__":
         print(f"Episode {e + 1}: Total Reward = {total_reward}")
 
     print("\nTraining complete! Test the model:")
-    test_state = [1, 4, 5, 6, 8, 2]
+    test_state = singlePopulation
     action = agent.act(test_state)
     print(f"For test state {test_state}, the chosen action is {action}")

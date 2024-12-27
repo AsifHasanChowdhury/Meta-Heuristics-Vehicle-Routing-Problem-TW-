@@ -6,6 +6,7 @@ import RouteEncoding as re
 import RoutePrint as rp
 import FileSystem as fs
 import elitistGen as eg
+import DQN as dqn
 import math
 import os
 
@@ -89,7 +90,13 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             pivot1+=1
             pivot2-=1
 
-            children1, children2 = co.cx_partially(parent1,parent2)
+            ActionP1 = dqn.ReinforcementDriverMethod(parent1,[1],[fitnessList[pivot1]])
+            ActionP2 = dqn.ReinforcementDriverMethod(parent2,[1],[fitnessList[pivot2]])
+            
+            children1
+            children2
+            if(ActionP1 == ActionP2 and ActionP1 == 1):
+                children1, children2 = co.cx_partially(parent1,parent2)
             
             mutatedc1 = mu.inverse_mutation(children1)
             mutatedc2 = mu.inverse_mutation(children2)
