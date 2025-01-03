@@ -5,6 +5,7 @@ import random
 import numpy as np
 import FitnessFunction as ff
 import CrossOver as co
+import Mutation as mo
 
 
 
@@ -165,7 +166,6 @@ import CrossOver as co
 # # print(f"Q-values: {q_values}")
 
 
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -201,7 +201,18 @@ class DQNAgent:
         self.model = ActionValueNetwork(list_size, action_size)
         self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
         self.criterion = nn.MSELoss()
-        self.replay_memory = []
+         # Separate experience replay for each group
+        self.replay_memory_group1 = []
+        self.replay_memory_group2 = []
+
+
+         # Define action groups
+        self.actions = ["cx_partially", "order_crossover", "swap_mutation", "inverse_mutation"]
+        self.action_groups = {
+            1: [0, 1],  # Group 1: SumOfList, MultiplicationOfList
+            2: [2, 3],  # Group 2: SubtractOfList, DivisionOfList
+        }
+
 
     def reward_calculation(self, action, list1, list2,instance, unit_cost=1.0, init_cost=0, wait_cost=0, delay_cost=0):
         
@@ -217,32 +228,123 @@ class DQNAgent:
             reward1 = ff.evaluate_individual(ch1, instance, unit_cost, init_cost, wait_cost, delay_cost)
             reward2 = ff.evaluate_individual(ch2, instance, unit_cost, init_cost, wait_cost, delay_cost)
             return reward1+reward2
-    
-        else:
-            reward1 = ff.evaluate_individual(ch1, instance, unit_cost, init_cost, wait_cost, delay_cost)
-            reward2 = ff.evaluate_individual(ch2, instance, unit_cost, init_cost, wait_cost, delay_cost)
+        
+        elif action == 2:
+            mc1 = mo.swap_mutation(list1)
+            mc2 = mo.swap_mutation(list2)
+            reward1 = ff.evaluate_individual(mc1, instance, unit_cost, init_cost, wait_cost, delay_cost)
+            reward2 = ff.evaluate_individual(mc2, instance, unit_cost, init_cost, wait_cost, delay_cost)
             return reward1+reward2
+        
+        elif action == 3:
+            mc1 = mo.inverse_mutation(list1)
+            mc2 = mo.inverse_mutation(list2)
+            reward1 = ff.evaluate_individual(mc1, instance, unit_cost, init_cost, wait_cost, delay_cost)
+            reward2 = ff.evaluate_individual(mc2, instance, unit_cost, init_cost, wait_cost, delay_cost)
+            return reward1+reward2
+        # else:
+        #     reward1 = ff.evaluate_individual(list1, instance, unit_cost, init_cost, wait_cost, delay_cost)
+        #     reward2 = ff.evaluate_individual(list2, instance, unit_cost, init_cost, wait_cost, delay_cost)
+        #     return reward1+reward2
 
 
-    def choose_action(self, state):
+    # def choose_action(self, state):
+    #     list1, list2 = state
+    #     if random.random() < self.epsilon:
+    #         return random.randint(0, self.action_size - 1)
+    #     else:
+    #         with torch.no_grad():
+    #             q_values = self.model(list1, list2)
+    #             return torch.argmax(q_values).item()
+
+    def choose_action(self, state, action_group=None):
+    
         list1, list2 = state
+
+        # Determine available actions based on the group
+        available_actions = (
+            self.action_groups.get(action_group, list(range(self.action_size)))
+        )
+
         if random.random() < self.epsilon:
-            return random.randint(0, self.action_size - 1)
+            # Choose a random action from the available actions
+            return random.choice(available_actions)
         else:
+            # Choose the action with the highest Q-value among the available actions
             with torch.no_grad():
                 q_values = self.model(list1, list2)
-                return torch.argmax(q_values).item()
+                q_values_filtered = torch.tensor([q_values[0][a] for a in available_actions])
+                return available_actions[torch.argmax(q_values_filtered).item()]
 
-    def store_experience(self, state, action, reward, next_state):
-        self.replay_memory.append((state, action, reward, next_state))
-        if len(self.replay_memory) > self.memory_size:
-            self.replay_memory.pop(0)
 
-    def train(self):
-        if len(self.replay_memory) < self.batch_size:
+
+    # def store_experience(self, state, action, reward, next_state):
+    #     self.replay_memory.append((state, action, reward, next_state))
+    #     if len(self.replay_memory) > self.memory_size:
+    #         self.replay_memory.pop(0)
+
+    # def train(self):
+    #     if len(self.replay_memory) < self.batch_size:
+    #         return
+
+    #     batch = random.sample(self.replay_memory, self.batch_size)
+    #     batch_states, batch_actions, batch_rewards, batch_next_states = zip(*batch)
+
+    #     batch_list1 = torch.cat([s[0] for s in batch_states])
+    #     batch_list2 = torch.cat([s[1] for s in batch_states])
+    #     batch_next_list1 = torch.cat([s[0] for s in batch_next_states])
+    #     batch_next_list2 = torch.cat([s[1] for s in batch_next_states])
+    #     batch_actions = torch.tensor(batch_actions)
+    #     batch_rewards = torch.tensor(batch_rewards).float()
+
+    #     with torch.no_grad():
+    #         target_q_values = batch_rewards + self.gamma * torch.max(
+    #             self.model(batch_next_list1, batch_next_list2), dim=1
+    #         )[0]
+
+    #     current_q_values = self.model(batch_list1, batch_list2)
+    #     current_q_values = current_q_values.gather(1, batch_actions.unsqueeze(1)).squeeze()
+
+    #     loss = self.criterion(current_q_values, target_q_values)
+    #     self.optimizer.zero_grad()
+    #     loss.backward()
+    #     self.optimizer.step()
+
+    # def decay_epsilon(self):
+    #     self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)
+
+    # def evaluate(self, list1, list2,action_group=None):
+    #     with torch.no_grad():
+    #         list1_tensor = torch.tensor([list1], dtype=torch.float32)
+    #         list2_tensor = torch.tensor([list2], dtype=torch.float32)
+    #         q_values = self.model(list1_tensor, list2_tensor)
+    #         available_actions = self.action_groups.get(action_group, list(range(self.action_size)))
+    #         q_values_filtered = torch.tensor([q_values[0][a] for a in available_actions])
+    #         best_action = available_actions[torch.argmax(q_values_filtered).item()]
+    #         return best_action, q_values.numpy()
+
+    def store_experience(self, state, action, reward, next_state, action_group):
+        if action_group == 1:
+            replay_memory = self.replay_memory_group1
+        elif action_group == 2:
+            replay_memory = self.replay_memory_group2
+        else:
             return
 
-        batch = random.sample(self.replay_memory, self.batch_size)
+        replay_memory.append((state, action, reward, next_state))
+        if len(replay_memory) > self.memory_size:
+            replay_memory.pop(0)
+
+    def train(self, action_group):
+        replay_memory = (
+            self.replay_memory_group1 if action_group == 1 else
+            self.replay_memory_group2 if action_group == 2 else
+            None
+        )
+        if not replay_memory or len(replay_memory) < self.batch_size:
+            return
+
+        batch = random.sample(replay_memory, self.batch_size)
         batch_states, batch_actions, batch_rewards, batch_next_states = zip(*batch)
 
         batch_list1 = torch.cat([s[0] for s in batch_states])
@@ -268,28 +370,45 @@ class DQNAgent:
     def decay_epsilon(self):
         self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)
 
-    def evaluate(self, list1, list2):
+    def evaluate(self, list1, list2, action_group=None):
         with torch.no_grad():
             list1_tensor = torch.tensor([list1], dtype=torch.float32)
             list2_tensor = torch.tensor([list2], dtype=torch.float32)
             q_values = self.model(list1_tensor, list2_tensor)
-            best_action = torch.argmax(q_values).item()
+            
+            available_actions = self.action_groups.get(action_group, list(range(self.action_size)))
+            q_values_filtered = torch.tensor([q_values[0][a] for a in available_actions])
+            best_action = available_actions[torch.argmax(q_values_filtered).item()]
             return best_action, q_values.numpy()
 
-    def train_model(self, num_episodes, kid1,kid2, instance, unit_cost, init_cost, wait_cost, delay_cost):
+
+
+
+
+    def train_model(self, num_episodes, kid1,kid2, instance, 
+                    unit_cost, init_cost, wait_cost, 
+                    delay_cost,user_choice_group):
+        
         for episode in range(num_episodes):
-            
+
             list1 =  torch.tensor(kid1, dtype=torch.float32).unsqueeze(0)
             list2 =  torch.tensor(kid2, dtype=torch.float32).unsqueeze(0)
             state = (list1, list2)
 
-            for t in range(10):
-                action = self.choose_action(state)
-                reward = self.reward_calculation(action, kid1, kid2,instance, unit_cost, init_cost, wait_cost, delay_cost)
-                next_state = state
 
-                self.store_experience(state, action, reward, next_state)
-                self.train()
+# Determine the group to train based on user choice
+            groups_to_train = (
+                [user_choice_group] if user_choice_group in [1, 2] else [1, 2]
+            )
+
+            for group in groups_to_train:
+                for t in range(10):
+                    action = self.choose_action(state)
+                    reward = self.reward_calculation(action, kid1, kid2,instance, unit_cost, init_cost, wait_cost, delay_cost)
+                    next_state = state
+
+                    self.store_experience(state, action, reward, next_state,action_group=group)
+                    self.train(group)
 
             self.decay_epsilon()
 

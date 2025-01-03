@@ -6,10 +6,9 @@ import RouteEncoding as re
 import RoutePrint as rp
 import FileSystem as fs
 import elitistGen as eg
-import DQN as dqn
 import math
 import os
-
+import finalDQN as fdqn
 #popSize <-- desired population size
 #individualSize <-- individual size
 #n <-- desired number of elite individual
@@ -22,11 +21,32 @@ import os
 def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_cost=1.0,
         init_cost=0, wait_cost=0, delay_cost=0):
     
+
+
+    list_size = 100
+    action_size = 4
+    agent = fdqn.DQNAgent(list_size, action_size)
+
+
+    # # Evaluate the trained model
+    # list1 = [1, 1, 1, -4, 5]
+    # list2 = [0, 5, -4, -5, -6]
+    # best_action, q_values = agent.evaluate(list1, list2)
+    # actions = ["SumOfList", "MultiplicationOfList"]
+    # print(f"Best Action: {actions[best_action]}")
+    # print(f"Q-values: {q_values}")
+
+
+   
+            
     
     json_data_dir = os.path.join(BASE_DIR, 'data', 'json')
     json_file = os.path.join(json_data_dir, f'{instance_name}.json')
     instance = fs.load_instance(json_file=json_file)
-    #print(instance)
+   
+    #agent.train_model(500,[1,2,8,4,5],[1,2,6,4,5],instance,unit_cost,init_cost, wait_cost, delay_cost)
+    #best_action, q_values = agent.evaluate(parent1, parent1)
+
     if instance is None:
         print("Please Check Your file path")
         return
@@ -88,60 +108,58 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             parent2 = population[pivot2]
             
 
-            rewardList=[]
-            rewardList.append(fitnessList[pivot1])
-            rewardList.append(fitnessList[pivot1])
+            #Train the agent for crossover
+            agent.train_model(50,parent1,parent2,instance,unit_cost,init_cost, wait_cost, delay_cost,1)
+            best_action, q_values = agent.evaluate(parent1, parent1,1)
             
-
-            ActionP1,reward1 = dqn.ReinforcementDriverMethod(parent1,2,rewardList)
-            ActionP2,reward2 = dqn.ReinforcementDriverMethod(parent2,2,rewardList)
             
-
-            # print(f'ACTIONP1 {ActionP1} reward1 {reward1}')
-            # print(f'ACTIONP2 {ActionP2} reward2 {reward2}')
-            
-            pivot1+=1
-            pivot2-=1
-
-            
+            #region It might be important block 
             children1 = None
             children2 = None
 
-            if(ActionP1 == ActionP2 and ActionP1 == 0):
-                children1, children2 = co.cx_partially(parent1,parent2)
+            if(best_action == 0):
+              #print(f'Action 0 {best_action}')
+              children1,children2 = co.cx_partially(parent1,parent2)
+
+            elif(best_action == 1):
+               #print(f'Action 1 {best_action}')
+               children1,children2 = co.order_crossover(parent1,parent2)
+
+        
             
-            elif (ActionP1 == ActionP2 and ActionP1 == 1):
-                children1, children2 = co.order_crossover(parent1,parent2)
-
-            elif (ActionP1 != ActionP2 and reward1>reward2):
-                children1, children2 = co.cx_partially(parent1,parent2)
-
-            else:
-                children1, children2 = co.order_crossover(parent1,parent2)
+            # mutatedc1 = mu.inverse_mutation(children1)
+            # mutatedc2 = mu.inverse_mutation(children2)
 
 
-            mutatedc1 = mu.inverse_mutation(children1)
-            mutatedc2 = mu.inverse_mutation(children2)
-
-
-            withMutationRewardList=[]
-            withMutationRewardList.append(ff.evaluate_individual(mutatedc1, instance, unit_cost,init_cost, wait_cost, delay_cost))
-            withMutationRewardList.append(ff.evaluate_individual(mutatedc2, instance, unit_cost,init_cost, wait_cost, delay_cost))
-
-            ActionM1,Mreward1 = dqn.ReinforcementDriverMethod(mutatedc1,2,withMutationRewardList)
-            ActionM2,Mreward2 = dqn.ReinforcementDriverMethod(mutatedc1,2,withMutationRewardList)
+            # agent.train_model(50,mutatedc1,mutatedc2,instance,unit_cost,init_cost, wait_cost, delay_cost,2)
+            # agent.evaluate(mutatedc1, mutatedc2,2)
             
-            if(Mreward1>reward1):
-                newPopulation.append(mutatedc1)
-            else:
-                newPopulation.append(children1)
-
-            if(Mreward2>reward2):
-                newPopulation.append(mutatedc2)
-            else:
-                newPopulation.append(children2)
+            # swmutatedc1 = mu.swap_mutation(children1)
+            # swmutatedc2 = mu.swap_mutation(children2)
 
 
+            agent.train_model(50,children1,children2,instance,unit_cost,init_cost, wait_cost, delay_cost,2)
+            best_action, q_values = agent.evaluate(children1, children2,2)
+            
+
+
+            if(best_action == 2):
+              mutatedc1 = mu.inverse_mutation(children1)
+              mutatedc2 = mu.inverse_mutation(children2)
+              newPopulation.append(mutatedc1)
+              newPopulation.append(mutatedc2)
+
+            elif(best_action == 3):
+              swmutatedc1 = mu.swap_mutation(children1)
+              swmutatedc1 = mu.swap_mutation(children2)
+              newPopulation.append(swmutatedc1)
+              newPopulation.append(swmutatedc1)
+
+            # newPopulation.append(children1)
+            # newPopulation.append(children2)
+
+            pivot1+=1
+            pivot2-=1
             productionCount-=1
         # np = newPopulation.sort() 
         # print("NEW POPULATION ",np)
@@ -198,6 +216,7 @@ def main():
     mut_pb = 0.02
     n_gen = 10
     instance_name = 'C107'
+
     # Q Vehicle fuel tank capacity /79.69/
     # C Vehicle load capacity /200.0/
     # r fuel consumption rate /1.0/
