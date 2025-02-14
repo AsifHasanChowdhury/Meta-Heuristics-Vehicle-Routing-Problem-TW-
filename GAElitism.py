@@ -272,7 +272,7 @@ def main():
     cx_pb = 0.85
     mut_pb = 0.02
     n_gen = 60
-    instance_name = 'R202'
+    instance_name = 'RC204'
 
     # Q Vehicle fuel tank capacity /79.69/
     # C Vehicle load capacity /200.0/
