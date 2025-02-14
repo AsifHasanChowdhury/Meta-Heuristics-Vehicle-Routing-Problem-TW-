@@ -1,0 +1,8 @@
+DIT = 1
+NMI = 2
+NMO = 0
+NMA = 2
+
+NMO * DIT / (NMO + NMI + NMA) 
+
+0 * 1 / ( 0 + 2 + 2)

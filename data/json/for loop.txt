@@ -1,0 +1,58 @@
+for loop:
+	order.materialID = id
+	order.count = count
+	order.Quantity =Quantity
+	order.customerName = Name
+
+
+
+
+for i in range (0,10):
+
+for i in range (20):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Human
+{
+  id ;
+
+}
+
+
+class student extends Human{
+
+
+
+}
+	
+
+class teacher extends Human{
+
+
+
+}
+
+class Staffs extends Human
+{
+
+
+}

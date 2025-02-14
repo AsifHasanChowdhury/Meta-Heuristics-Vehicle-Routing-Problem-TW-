@@ -1,0 +1,10 @@
+SDLC
+Water , V, Iterative
+
+Sprial CMMI low question
+Requirement Analysis
+Diagram Class & UML Diagram
+Use Case is in Question
+Use Case Skip Bring Design Pattern
+12 days per sprint
+4 quiz n-1

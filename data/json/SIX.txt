@@ -1,0 +1,39 @@
+CSE110
+CSE111
+CSE221
+CSE370
+CSE321
+CSE470
+CSE471
+CSE422
+
+
+public class vehicle
+{
+    public void wheel(){ .........}
+    public void chesis(){ .........}
+
+}
+
+public class RideShareService extends vehicle
+{
+    public void parcelService(){ .........}
+    public void rentService(){ .........}
+
+}
+
+public class Uber extends RideShareService
+{
+    public void rateOurService(){........}
+    public void rentService(){......}
+    public void chesis() {......}
+}
+
+
+
+
+
+
+
+
+

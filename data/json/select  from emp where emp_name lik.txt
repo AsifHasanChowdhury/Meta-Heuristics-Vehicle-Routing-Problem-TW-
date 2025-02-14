@@ -1,0 +1,32 @@
+select * from emp where emp_name like '%Asif%' (WildCard)
+
+select * from emp where emp_name like 'A%' starts with
+
+select * from emp where emp_name like '%A'; ends with
+
+
+Co-Related Sub-Q
+
+(select max(salary) from emp where salary <
+					(select max(salary) from emp))
+
+select employee_name from emp where salary =
+	(select max(salary) from emp where salary <
+					(select max(salary) from emp))
+
+
+Group by parameter can only be selected value
+Group can use only Aggregate functions with it's selected value
+
+select dept_name , count(*) from emp where dept_name in
+	(select dept_name from emp group by dept_name)
+
+select dept_name, count(*) from emp group by dept_name 
+
+
+select dept_name from emp group by dept_name having count(e_name) < 2
+
+
+
+
+
