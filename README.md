@@ -30,4 +30,12 @@
 
     <img width="793" alt="{14846BB0-2B8C-4FDD-9850-6598226807BE}" src="https://github.com/user-attachments/assets/6400be2f-a39b-4299-924b-241f3c3b3c03" />
 
-  - Step 5: In-order to monitor the result 
+  - Step 5: In order to monitor the result make sure you change the instance name properly and keep it similar in both places as per the pictures below.
+    -- First Place is in GAElistm.py file.
+    -- Second Place is in FileSystem.py file.
+    <img width="959" alt="{EC786E9B-2E62-4E6D-AC97-0BD824EB4427}" src="https://github.com/user-attachments/assets/20c53f8a-462d-4aec-9086-6249b35993ce" />
+    <img width="897" alt="{D10D0C98-E8B4-4A07-A03F-43DFF86D0D16}" src="https://github.com/user-attachments/assets/24de8e16-7ba2-45bf-98fd-be6ee1cfdefa" />
+    -- Once the code ran properly. Locate the result folder in your local machine for CSV files like the picture below. A new file will be created everytime if you change the instance properly.
+    <img width="554" alt="{398FB12D-2162-4B14-B376-B3C0E0F44394}" src="https://github.com/user-attachments/assets/f3141c79-6983-45c8-9ec2-68267a244b93" />
+
+
