@@ -1,7 +1,10 @@
 import numpy as np
 
 
-def populationGeneration(individual_size,pop_size):
+def populationGeneration(individual_size,pop_size,seed=50):
+    
+    if seed is not None:
+        np.random.seed(seed)
     
     newPopulation = []
 

@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 from collections import deque
-import CrossOver as co
 
 # Define the Neural Network for DQN
 class DQN(nn.Module):
@@ -59,6 +58,7 @@ class DQNAgent:
         for state, action, reward, next_state, done in minibatch:
             state = torch.FloatTensor(state).unsqueeze(0)
             next_state = torch.FloatTensor(next_state).unsqueeze(0)
+
             target = self.model(state).detach()
 
             if done:
@@ -79,45 +79,52 @@ class DQNAgent:
 
 # Custom Environment
 class CustomEnvironment:
-    def __init__(self,ActionSize,population):
-        self.action_space = ActionSize
-        self.state = population
+    def __init__(self):
+        self.action_space = 2  # AddDetails (0) and SubtractDetails (1)
 
-    def reset(self,population):
-        self.state = population
-        return self.state
+    def reset(self, list1, list2):
+        self.list1 = list1
+        self.list2 = list2
+        return (self.list1, self.list2)
 
-    def step(self, action,fitnessScoreList):
-        # Example reward structure with variability
-        base_rewards = fitnessScoreList
-        variability = np.random.randint(-100, 100)
-        reward = base_rewards[action] + variability
+    def step(self, action):
+        if action == 0:  # AddDetails
+            result = [x + y for x, y in zip(self.list1, self.list2)]
+            reward = sum(result)  # Example: reward is the sum of the results
+        elif action == 1:  # SubtractDetails
+            result = [x - y for x, y in zip(self.list1, self.list2)]
+            reward = sum(1 for r in result if r > 0)  # Example: count of positives
 
-        # Simulate next state and episode termination
-        next_state = [x + action for x in self.state]
-        print("NEXT STATE ",next_state)
-        done = random.random() < 0.1  # Random chance of episode ending
+        next_state = (self.list1, self.list2)  # State remains the same for simplicity
+        done = True  # One-step episode
         return next_state, reward, done
 
 # Training Loop
-def ReinforcementDriverMethod(singlePopulation,action_space,fitnessScoreList):
-    env = CustomEnvironment(action_space,singlePopulation)
-    agent = DQNAgent(state_size=len(env.state), action_size=env.action_space)
+def train_dqn():
+    env = CustomEnvironment()
+    state_size = 6  # Length of list1 + list2 (3 + 3 for this example)
+    action_size = env.action_space
+    agent = DQNAgent(state_size, action_size)
 
-    episodes = 5
+    episodes = 1000
     batch_size = 32
 
     for e in range(episodes):
-        state = env.reset(singlePopulation)
+        list1 = [random.randint(1, 10) for _ in range(3)]
+        list2 = [random.randint(1, 10) for _ in range(3)]
+
+        state = env.reset(list1, list2)
+        state_flattened = np.array(state[0] + state[1])  # Flatten state for input to the model
         total_reward = 0
 
         while True:
-            action = agent.act(state)
-            next_state, reward, done = env.step(action,fitnessScoreList)
-            total_reward += reward
+            action = agent.act(state_flattened)
+            next_state, reward, done = env.step(action)
+            next_state_flattened = np.array(next_state[0] + next_state[1])
 
-            agent.remember(state, action, reward, next_state, done)
-            state = next_state
+            agent.remember(state_flattened, action, reward, next_state_flattened, done)
+            state_flattened = next_state_flattened
+            total_reward += reward
 
             if done:
                 agent.update_target_model()
@@ -127,11 +134,12 @@ def ReinforcementDriverMethod(singlePopulation,action_space,fitnessScoreList):
         print(f"Episode {e + 1}: Total Reward = {total_reward}")
 
     print("\nTraining complete! Test the model:")
-    test_state = singlePopulation
-    action = agent.act(test_state)
-    print(f"For test state {test_state}, the chosen action is {action}")
+    list1 = [1, 2, 3]
+    list2 = [4, 5, 6]
+    state = env.reset(list1, list2)
+    state_flattened = np.array(state[0] + state[1])
+    action = agent.act(state_flattened)
+    print(f"For test state (list1={list1}, list2={list2}), the chosen action is {action}")
 
-    return action,total_reward
-
-
-ReinforcementDriverMethod([1, 4, 5, 6, 8, 2],2,[0.555,0.99999])
+# Run the training
+train_dqn()

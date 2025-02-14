@@ -213,7 +213,14 @@ def cx_partially(ind1, ind2):
     #return child1,child1
 # print(cx_partially([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
 
-print(order_crossover([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
+#print(order_crossover([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
 
 
 #print(order_cross_over([1,2,3,4,5,6,7,8,9],[3,9,4,7,6,5,2,1,8]))
+
+def test(user_choice_group):
+    groups_to_train = ([user_choice_group] if user_choice_group in [1, 2] else [1, 2])
+    print(groups_to_train)
+    
+
+test(1)

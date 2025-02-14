@@ -3,7 +3,7 @@ import io
 from json import load
 
 def filePath():
-    return 'D:\GA\py-ga-VRPTW\data\json\C107.json'
+    return 'D:\GA\py-ga-VRPTW\data\json\R203.json'
 
 
 
@@ -46,3 +46,27 @@ def load_instance(json_file):
     else:
         print("Check Your File Path")
     return None
+
+
+
+def make_dirs_for_file(path):
+    try:
+        os.makedirs(os.path.dirname(path))
+    except OSError:
+        pass
+    
+    
+def exist(path, overwrite=False, display_info=True):
+    '''gavrptw.uitls.exist(path, overwrite=False, display_info=True)'''
+    if os.path.exists(path):
+        if overwrite:
+            if display_info:
+                print(f'{guess_path_type(path)}: {path} exists. Overwrite.')
+            os.remove(path)
+            return False
+        if display_info:
+            print(f'{guess_path_type(path)}: {path} exists.')
+        return True
+    if display_info:
+        print(f'{guess_path_type(path)}: {path} does not exist.')
+    return False

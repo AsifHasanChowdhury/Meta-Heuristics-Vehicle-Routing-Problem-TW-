@@ -9,6 +9,9 @@ import elitistGen as eg
 import math
 import os
 import finalDQN as fdqn
+import charts as ch
+import io as io
+from csv import DictWriter
 #popSize <-- desired population size
 #individualSize <-- individual size
 #n <-- desired number of elite individual
@@ -19,10 +22,10 @@ import finalDQN as fdqn
 
 
 def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_cost=1.0,
-        init_cost=0, wait_cost=0, delay_cost=0):
-    
-
-
+        init_cost=0, wait_cost=0, delay_cost=0,export_csv=True):
+    # print("Hello World")
+    # print(f'{BASE_DIR} ssssss')    
+    csv_data = []
     list_size = 100
     action_size = 4
     agent = fdqn.DQNAgent(list_size, action_size)
@@ -37,9 +40,6 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
     # print(f"Q-values: {q_values}")
 
 
-   
-            
-    
     json_data_dir = os.path.join(BASE_DIR, 'data', 'json')
     json_file = os.path.join(json_data_dir, f'{instance_name}.json')
     instance = fs.load_instance(json_file=json_file)
@@ -51,7 +51,8 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
         print("Please Check Your file path")
         return
 
-
+    fitness_dict = {}
+    population_dict = {}
     #population <-- {}
     population = pg.populationGeneration(individualSize,pop_size)
     #print("L",population)
@@ -64,7 +65,7 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
     
     # #Repeat Until Loop
     while i < nGen:
-        print("run: ",i)
+        #print("run: ",i)
         fitnessList = []
         #for each individual Pi belongs to P do
         index = 0
@@ -109,7 +110,7 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             
 
             #Train the agent for crossover
-            agent.train_model(50,parent1,parent2,instance,unit_cost,init_cost, wait_cost, delay_cost,1)
+            agent.train_model(2,parent1,parent2,instance,unit_cost,init_cost, wait_cost, delay_cost,1)
             best_action, q_values = agent.evaluate(parent1, parent1,1)
             
             
@@ -138,7 +139,7 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
             # swmutatedc2 = mu.swap_mutation(children2)
 
 
-            agent.train_model(50,children1,children2,instance,unit_cost,init_cost, wait_cost, delay_cost,2)
+            agent.train_model(2,children1,children2,instance,unit_cost,init_cost, wait_cost, delay_cost,2)
             best_action, q_values = agent.evaluate(children1, children2,2)
             
 
@@ -177,7 +178,30 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
         print(f'  Max {max(fits)}')
         print(f'  Avg {mean}')
         print(f'  Std {std}')
-
+        
+        
+        
+        
+        
+        if export_csv:
+            csv_row = {
+                'generation': i,
+                'evaluated_individuals': len("TEST"),
+                'min_fitness': min(fits),
+                'max_fitness': max(fits),
+                'avg_fitness': mean,
+                'std_fitness': std,
+            }
+            csv_data.append(csv_row)
+        
+        
+        fitness_dict[i] = fitnessList
+        
+        
+        for gen, genPopulation in enumerate(population, start=0):
+            population_dict[gen] = genPopulation
+        
+        
         population = newPopulation
         
         i+=1
@@ -190,10 +214,43 @@ def geneticAlgorithmElitism(pop_size,n,individualSize,nGen, instance_name, unit_
     print("Total Selected ",len(best_ind))
     print(f'Best individual: {best_ind}')
     print(f'Fitness: {fitnessList[currentbestIndex]}')
+    
+    
+    
+    if export_csv:
+        print("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+        print(f'base dir {BASE_DIR}')
+        csv_file_name = f'{instance_name}_uC{unit_cost}_iC{init_cost}_wC{wait_cost}' \
+            f'_dC{delay_cost}_pS{pop_size}.csv'
+        csv_file = os.path.join(BASE_DIR, 'results', csv_file_name)
+        print(f'Write to file: {csv_file}')
+        fs.make_dirs_for_file(path=csv_file)
+        if not fs.exist(path=csv_file, overwrite=True):
+            with io.open(csv_file, 'wt', encoding='utf-8', newline='') as file_object:
+                fieldnames = [
+                    'generation',
+                    'evaluated_individuals',
+                    'min_fitness',
+                    'max_fitness',
+                    'avg_fitness',
+                    'std_fitness',
+                ]
+                writer = DictWriter(file_object, fieldnames=fieldnames, dialect='excel')
+                writer.writeheader()
+                for csv_row in csv_data:
+                    writer.writerow(csv_row)
+    
+    
+    
     rp.print_route(re.individual_to_route_decoding(best_ind, instance),instance)
     print(f'Total cost: {1 / fitnessList[currentbestIndex]}')
-
-
+    ch.fitnessMetricsAccrossGeneration(fitness_dict)
+    ch.newGraph(population_dict)
+    
+    
+    
+    
+    
 def selectBestFit(population):
     bestFit = None
     for singlePeople in population:
@@ -211,11 +268,11 @@ def main():
     delay_cost = 1.5
 
     ind_size = 100
-    pop_size = 100
+    pop_size = 20
     cx_pb = 0.85
     mut_pb = 0.02
-    n_gen = 10
-    instance_name = 'C107'
+    n_gen = 60
+    instance_name = 'R202'
 
     # Q Vehicle fuel tank capacity /79.69/
     # C Vehicle load capacity /200.0/
