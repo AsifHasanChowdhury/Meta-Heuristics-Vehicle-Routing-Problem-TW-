@@ -1,4 +1,5 @@
-<img width="374" alt="{5EE8C4EC-70EB-40C7-A78D-F894AF824BCF}" src="https://github.com/user-attachments/assets/bccd48cd-0ab5-4c20-bfd4-9cef26315787" /># Meta-Heuristics-E-Vehicle-Routing-Problem-TW
+<strong> Welcome to the Git Repo of E-Vehicle Routing Problem </strong>
+
 - Step 1: Clone the git repository
 - Step 2: Locate the GAElitism.py file. This is the driver file.
 - Step 3: Install the necessary packages using Pip Commands.
@@ -21,5 +22,12 @@
  
     <img width="378" alt="{B88F9E44-FE05-4A90-BB94-97DDAE3DBE99}" src="https://github.com/user-attachments/assets/e3f958f6-326c-41b2-8fc3-8c7977ab2f91" />
 
+  -Step 3: Check the FileSystem.py as the image below. You will find a method called filepath. Setup the folder location of your dataset Accordingly.
 
-  
+    <img width="958" alt="{888E4511-1024-46B6-B23B-57D7C40A9A14}" src="https://github.com/user-attachments/assets/f1a5b679-5b7a-434e-b35a-2d79e145418c" />
+
+  -Step 4: Click the Play button At the top-most corner to run the codebase. You can Also type GAElitism.py in the terminal to run it. If it runs properly then you will see the console like the image below.
+
+    <img width="793" alt="{14846BB0-2B8C-4FDD-9850-6598226807BE}" src="https://github.com/user-attachments/assets/6400be2f-a39b-4299-924b-241f3c3b3c03" />
+
+  - Step 5: In-order to monitor the result 
